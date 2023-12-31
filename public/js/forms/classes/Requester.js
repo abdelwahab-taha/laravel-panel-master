@@ -1,72 +1,42 @@
 export class Requester{
-    post(URI, formData, onSuccess = null, onError = null){
-        this.activate(URI, 'POST', formData, onSuccess, onError);
+    post(){
+        return this.call("POST");
     }
 
-    get(URI, formData, onSuccess = null, onError = null){
-        this.activate(URI, 'GET', formData, onSuccess, onError);
+    get(){
+        return this.call("GET");
     }
 
-    patch(URI, formData, onSuccess = null, onError = null){
-        this.activate(URI, 'PATCH', formData, onSuccess, onError);
+    patch(){
+        return this.call("PATCH");
     }
 
-    delete(URI, formData, onSuccess = null, onError = null){
-        this.activate(URI, 'DELETE', formData, onSuccess, onError);
+    delete(){
+        return this.call("DELETE");
     }
 
-    activate(URI, requestMethod, formData, onSuccess = null, onError = null){
-        fetch(URI, {
-            method: requestMethod,
-            body: formData,
-            headers: {
-                'Accept': 'application/json'
-            }
-        }).then(response => {
-            if (response.ok) return response.json();
-            throw Promise.reject(response);
-        }).then(data => {
-            if(typeof onSuccess !== null && typeof onSuccess === 'function') onSuccess(data);
-        }).catch(response => {
-            try{
-                response.catch(res => {
-                    if(typeof onError !== null && typeof onError === 'function') onError(res);
-                });
-            }catch (ex){
-                console.log(ex.message());
-            }
-        });
-    }
-
-    async call(requestMethod){
+    call(requestMethod){
         let xhr = new XMLHttpRequest();
         xhr.open(requestMethod, this.url, true);
         for (const [name, value] of Object.entries(this.headers)) {
             xhr.setRequestHeader(name, value);
         }
-
         let success = this.getSuccess(), fail = this.getError();
 
-        await xhr.onload = function () {
-            try {
-                if (xhr.status >= 200 && xhr.status < 300) {
-                    return success(xhr.responseText);
-                }
-                return fail(xhr.status, xhr.statusText);
-            }catch (ex){
-                console.error(ex);
+        xhr.onload = function () {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                success(xhr.responseText);
+                return;
             }
+            fail(xhr.status, xhr.statusText)
         };
 
         xhr.onerror = function () {
-            return fail(0, "request failed");
+            fail(0, "request failed")
         };
 
-        try {
-            xhr.send(JSON.stringify(this.formData));
-        }catch (ex){
-            console.error(ex);
-        }
+        xhr.send(this.formData);
+
         return this;
     }
 
@@ -90,12 +60,12 @@ export class Requester{
         return this;
     }
 
-    headers(headers){
+    setHeaders(headers){
         this.headers = headers;
         return this;
     }
 
-    formData(formData){
+    setFormData(formData){
         this.formData = formData;
         return this;
     }
@@ -106,7 +76,7 @@ export class Requester{
     }
 
     getError(){
-        return typeof this.successCallback === 'function' ? this.successCallback :
+        return typeof this.errorCallback === 'function' ? this.errorCallback :
             ((errorCode, errorMessage) => console.log("Error: " + errorMessage + ", Code (" + errorCode + ")"))
     }
 

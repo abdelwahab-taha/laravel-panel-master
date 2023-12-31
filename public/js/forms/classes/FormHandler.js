@@ -17,8 +17,12 @@ export class FormHandler {
     onSubmit(form){
         form.addEventListener('submit', event => {
             event.preventDefault();
+            if(form.getAttribute("data-transfer") === "on") return false;
+            form.setAttribute("data-transfer", "on");
             const formData = this.collectFormData(form);
-            this.onRequest(formData, form.action);
+            this.onRequest(formData, form.action, () => {
+                form.setAttribute("data-transfer", "off");
+            });
         });
         return this;
     }
@@ -27,14 +31,15 @@ export class FormHandler {
 
     }
 
-    onRequest(formData, URL){
-        Requester.post(URL, formData, data => {
-            if(this.onSuccessCallback) this.onSuccessCallback(data)
-            else alert(data);
-        }, error => {
-            if(this.onErrorCallback) this.onErrorCallback(error);
-            else alert(error.statusText);
-        });
+    onRequest(formData, URL, then = null){
+        let requester = new Requester;
+        requester.URL(URL).setFormData(formData).setHeaders({Accept: 'application/json'})
+        .onError(function (code, message) {
+            console.log(code, message);
+            if(typeof then === 'function') then();
+        }).onSuccess(function (response) {
+            if(typeof then === 'function') then();
+        }).post();
     }
 
     collectFormData(form){
