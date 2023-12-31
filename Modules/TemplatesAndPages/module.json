@@ -1,0 +1,11 @@
+{
+    "name": "TemplatesAndPages",
+    "alias": "templatesandpages",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\TemplatesAndPages\\app\\Providers\\TemplatesAndPagesServiceProvider"
+    ],
+    "files": []
+}

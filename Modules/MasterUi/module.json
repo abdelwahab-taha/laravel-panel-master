@@ -1,0 +1,11 @@
+{
+    "name": "MasterUi",
+    "alias": "masterui",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\MasterUi\\app\\Providers\\MasterUiServiceProvider"
+    ],
+    "files": []
+}
